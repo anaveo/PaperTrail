@@ -1,0 +1,20 @@
+name: 'Commit Analyzer Action'
+description: 'Analyzes commits, generates verbose messages via Claude, and updates papertrail.md'
+inputs:
+  anthropic-api-key:  # Updated from llm-api-key
+    description: 'API key for Anthropic Claude'
+    required: true
+  repo-token:
+    description: 'GitHub token for repo access'
+    required: true
+    default: ${{ github.token }}
+  papertrail-path:
+    description: 'Path to papertrail.md'
+    required: false
+    default: 'papertrail.md'
+outputs:
+  summary:
+    description: 'Generated commit summary'
+runs:
+  using: 'node20'
+  main: 'index.js'

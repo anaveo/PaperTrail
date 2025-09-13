@@ -1,0 +1,30 @@
+{
+  "name": "papertrail",
+  "version": "1.0.0",
+  "description": "Using AI to explain code changes and create clear commit messages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anaveo/PaperTrail.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anaveo/PaperTrail/issues"
+  },
+  "homepage": "https://github.com/anaveo/PaperTrail#readme",
+  "devDependencies": {
+    "jest": "^30.1.3"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^6.0.1",
+    "diff": "^8.0.2",
+    "@anthropic-ai/sdk": "^0.62.0"
+  }
+}
