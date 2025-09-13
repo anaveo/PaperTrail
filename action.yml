@@ -1,4 +1,4 @@
-name: 'Commit Message Enhancer'
+name: 'Commit Message Improver'
 description: 'Appends a fixed string to the latest commit message'
 runs:
   using: 'composite'
