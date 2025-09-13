@@ -4,7 +4,7 @@
     "description": "Generates clean commit messages from diffs using Gemini LLM",
     "main": "index.js",
     "scripts": {
-        "build": "ncc build index.js -o dist --external @actions/github --license licenses.txt",
+       "build": "ncc build index.js -o dist",
         "test": "echo 'Tests TBD'"
     },
     "dependencies": {
@@ -13,7 +13,7 @@
         "@google/generative-ai": "^0.20.0"
     },
     "devDependencies": {
-        "@vercel/ncc": "0.38.1"
+        "@vercel/ncc": "^0.38.1"
     },
     "repository": {
         "type": "git",
