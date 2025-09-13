@@ -1,18 +1,16 @@
-const { createOrUpdateFileContents } = require('@octokit/rest').repos;  // For clarity, but use octokit instance
-
 /**
  * Appends commit details to papertrail.md via GitHub API.
  * @param {string} path - File path (e.g., 'papertrail.md').
  * @param {string} sha - Commit SHA.
  * @param {string} message - Verbose message from LLM.
  * @param {string} summary - Concise summary from LLM.
- * @param {Object} octokit - Authenticated Octokit instance.
+ * @param {Object} octokit - Authenticated Octokit instance (from @actions/github).
  * @param {Object} context - GitHub context (repo, ref).
  * @returns {Promise<void>}.
  */
 async function update(path, sha, message, summary, octokit, context) {
     const { owner, repo } = context.repo;
-    const branch = context.ref.replace('refs/heads/', '');  // e.g., 'main' from 'refs/heads/main'
+    const branch = context.ref.replace('refs/heads/', '');  // e.g., 'main'
 
     try {
         // Get existing file (handle 404 for creation)
@@ -30,11 +28,11 @@ async function update(path, sha, message, summary, octokit, context) {
             if (error.status !== 404) throw error;
             // File doesn't exist: Create fresh
             existingContent = '# Papertrail\n\nThis file tracks commit summaries and details.';
-            existingSha = null;
+            existingSha = undefined;  // Use undefined for create (avoids 409 errors)
         }
 
         // Prepare new section (append at end)
-        const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');  // e.g., '2025-09-12 10:30:45'
+        const timestamp = new Date(Date.parse(context.payload.head_commit.timestamp) || Date.now()).toISOString().slice(0, 19).replace('T', ' ');  // Use commit timestamp if available
         const newSection = `\n\n## Commit ${sha.slice(0, 7)} (${timestamp})\n\n**Summary:** ${summary}\n\n**Details:** ${message}\n\n---`;
         const updatedContent = existingContent + newSection;
 
@@ -48,7 +46,7 @@ async function update(path, sha, message, summary, octokit, context) {
             path,
             message: commitMessage,
             content: base64Content,
-            sha: existingSha,  // Null for create
+            sha: existingSha,
             branch
         });
 

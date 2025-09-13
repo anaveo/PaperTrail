@@ -1,0 +1,32 @@
+name: Test Commit Analyzer
+on: [push]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: true  # Enables debug for all steps (works in act)
+      STUB_LLM: 'true'  # Stub mode
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Analyzer
+        uses: ./
+        with:
+          anthropic-api-key: 'fake-key-stubbed'
+          repo-token: fake-local-token  # NEW: Mock token for local auth
+        env:
+          GITHUB_TOKEN: fake-local-token  # Ensures propagation
+
+      - name: Verify papertrail.md
+        run: |
+          if [ -f papertrail.md ]; then
+            echo "papertrail.md:"
+            cat papertrail.md
+          else
+            echo "papertrail.md missing"
+          fi
