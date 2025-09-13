@@ -1,9 +1,10 @@
-name: 'Commit Message Enhancer'
-description: 'Generates a clean commit message from diffs using Gemini LLM'
+name: "Gemini Commit Message Generator"
+description: "Generate commit messages with Google Gemini"
+author: "Your Name"
 inputs:
   gemini-api-key:
-    description: 'API key for Google Gemini'
+    description: "Google Generative AI API key"
     required: true
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "index.js"
