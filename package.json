@@ -1,0 +1,18 @@
+{
+    "name": "papertrail",
+    "version": "0.0.7",
+    "description": "Generates clean commit messages from diffs using Gemini LLM",
+    "main": "index.js",
+    "scripts": {
+        "build": "ncc build index.js -o dist",
+        "test": "echo 'Tests TBD'"
+    },
+    "dependencies": {
+        "@actions/core": "^1.10.0",
+        "@actions/github": "^6.0.0",
+        "@google/generative-ai": "^0.20.0"
+    },
+    "devDependencies": {
+        "@vercel/ncc": "^0.38.0"
+    }
+}

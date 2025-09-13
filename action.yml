@@ -1,28 +1,9 @@
-name: 'Commit Message Improver'
-description: 'Appends a fixed string to the latest commit message'
+name: 'Commit Message Enhancer'
+description: 'Generates a clean commit message from diffs using Gemini LLM'
+inputs:
+  gemini-api-key:
+    description: 'API key for Google Gemini'
+    required: true
 runs:
-  using: 'composite'
-  steps:
-    - run: |
-        # Configure Git identity
-        git config user.name "${{ github.actor }}"
-        git config user.email "${{ github.actor }}@github-actions[bot].com"
-        echo "Git identity set: $(git config user.name) <$(git config user.email)>"
-
-        # Get the latest commit message
-        ORIGINAL_MESSAGE=$(git log -1 --pretty=%B)
-        echo "Original message: $ORIGINAL_MESSAGE"
-
-        # Append fixed string
-        NEW_MESSAGE="$ORIGINAL_MESSAGE [Enhanced]"
-        echo "New message: $NEW_MESSAGE"
-
-        # Amend the commit with the new message
-        git commit --amend -m "$NEW_MESSAGE"
-        echo "Commit amended successfully"
-
-        # Push the amended commit (force to overwrite)
-        git push origin HEAD --force
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+  using: 'node20'
+  main: 'dist/index.js'
