@@ -5,7 +5,6 @@ node_modules/
 jspm_packages/
 
 # Build artifacts (if you later bundle/minify)
-dist/
 build/
 
 # Logs
