@@ -53,7 +53,7 @@ const octokit = {
 const core = {
     getInput: jest.fn(name => {
         const inputs = {
-            'anthropic-api-key': 'fake-key',
+            'gemini-api-key': 'fake-key',
             'repo-token': 'fake-token',
             'papertrail-path': 'papertrail.md'
         };

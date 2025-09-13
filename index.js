@@ -1,16 +1,8 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const fs = require('fs');
-const path = require('path');
-const diffAnalyzer = require('./src/diffAnalyzer');
-const llmGenerator = require('./src/llmGenerator');
-const fileUpdater = require('./src/fileUpdater');
-
 async function run() {
     let apiKey, token, papertrailPath, octokit, context;
 
     try {
-        apiKey = core.getInput('gemini-api-key', { required: true });  // Updated input
+        apiKey = core.getInput('gemini-api-key', { required: true });
         token = core.getInput('repo-token');
         papertrailPath = core.getInput('papertrail-path');
 
@@ -19,51 +11,55 @@ async function run() {
         octokit = github.getOctokit(token);
         context = github.context;
 
-        core.debug(`Context: sha=${context.sha}, ref=${context.ref}, repo=${JSON.stringify(context.repo)}`);
+        core.debug(`Context: sha=${context.sha}, ref=${context.ref}, eventName=${context.eventName}, before=${context.payload.before || 'none'}`);
 
-        let commit;
-        const isLocalMock = process.env.ACT === 'true' && token === 'fake-local-token';  // Mock mode unchanged
+        let analysis, isMerge = false;
+        const isLocalMock = process.env.ACT === 'true' && token === 'fake-local-token';
 
         if (isLocalMock) {
-            core.debug('Local mock mode: Simulating Octokit calls');
-            // Mock commit (unchanged)
-            commit = {
-                sha: context.sha,
-                files: [
-                    {
-                        filename: 'src/mock.js',
-                        status: 'modified',
-                        additions: 3,
-                        deletions: 1,
-                        patch: '@@ -1,1 +1,3 @@ \n- old code\n+ new code\n+ improved logic'
-                    }
-                ],
-                parents: context.ref.includes('merge') ? [{ sha: 'parent-sha-1' }, { sha: 'parent-sha-2' }] : [{ sha: 'parent-sha' }]
+            core.debug('Local mock mode: Simulating diff...');
+            // Mock diff (updated: Simulate files from 'before' to 'after' for consistency)
+            const mockFiles = [
+                {
+                    filename: 'src/test.js',
+                    status: 'modified',
+                    additions: 1,
+                    deletions: 0,
+                    patch: '@@ -1 +1 @@ console.log("Updated");'
+                }
+            ];
+            analysis = {
+                summary: `Mock commit changed ${mockFiles.length} files...`,
+                files: mockFiles.map(f => ({ filename: f.filename, status: f.status, changes: `${f.additions} added, ${f.deletions} deleted. Patch: ${f.patch}` })),
+                stats: { added: 1, deleted: 0, total: 1 },
+                isMerge: context.ref.includes('merge')  // Simulate merge detection
             };
-            core.debug(`Mock commit: ${commit.sha}, files: ${commit.files.length}, isMerge: ${commit.parents.length > 1}`);
+            core.debug(`Mock analysis: ${JSON.stringify(analysis, null, 2)}`);
         } else {
-            // Real mode: Fetch from API (unchanged)
-            core.debug('Fetching real commit data...');
-            const { data: fetchedCommit } = await octokit.rest.repos.getCommit({
+            // Real mode: Use compareCommits for full diff (handles merges/branches)
+            core.debug('Fetching real diff via compareCommits...');
+            const beforeSha = context.payload.before || '0000000000000000000000000000000000000000';  // Root for initial commits
+            const { data } = await octokit.rest.repos.compareCommits({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                commit_sha: context.sha,
+                basehead: `${beforeSha}...${context.sha}`  // Diff from before to current
             });
-            commit = fetchedCommit;
-            core.debug(`Real commit fetched: ${commit.sha}, parents: ${commit.parents?.length || 0}`);
-        }
+            const files = data.files || [];  // Array of {filename, status, additions, deletions, patch}
+            isMerge = data.status === 'behind' || data.total_commits > 1;  // Detect merge via status or commits
 
-        // Modular: Analyze diffs (unchanged)
-        core.debug('Analyzing diffs...');
-        const analysis = diffAnalyzer.analyze(commit.files, commit);
-        core.debug(`Analysis: ${JSON.stringify(analysis, null, 2)}`);
+            core.debug(`Diff fetched: ${files.length} files, status=${data.status}, isMerge=${isMerge}`);
+
+            // Modular: Analyze diffs
+            analysis = diffAnalyzer.analyze(files, { parents: isMerge ? [{}, {}] : [] });  // Pass mock parents for isMerge
+            core.debug(`Analysis: ${JSON.stringify(analysis, null, 2)}`);
+        }
 
         // Modular: Generate via LLM (stubbed or real)
         core.debug('Generating message/summary...');
         const { message, summary } = await llmGenerator.generate(analysis, apiKey);
         core.debug(`Generated: message=${message}, summary=${summary}`);
 
-        // Modular: Update file (unchanged)
+        // Modular: Update file
         core.debug('Updating papertrail.md...');
         if (isLocalMock) {
             // Local mock write (unchanged)
@@ -92,5 +88,3 @@ async function run() {
         core.setFailed(`Action failed: ${error.message}`);
     }
 }
-
-run();

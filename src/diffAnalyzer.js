@@ -7,6 +7,7 @@ const parseDiff = require('parse-diff');  // For parsing unified diff patches
  * @returns {Object} Analysis: { summary: string, files: Array<{filename, status, changes: string}>, stats: {added, deleted, total}, isMerge: boolean }.
  */
 function analyze(files, commit) {
+    core.debug(`Input files: ${JSON.stringify(files, null, 2)}`);  // NEW: Log raw files
     if (!files || files.length === 0) {
         return { summary: 'No files changed in this commit.', files: [], stats: { added: 0, deleted: 0, total: 0 }, isMerge: false };
     }
