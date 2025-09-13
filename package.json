@@ -4,7 +4,16 @@
   "description": "Using AI to explain code changes and create clear commit messages",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint ."
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "index.js"
+    ]
   },
   "repository": {
     "type": "git",
@@ -24,7 +33,7 @@
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.1",
-    "@anthropic-ai/sdk": "^0.62.0",
+    "@google/generative-ai": "^0.24.1",
     "diff": "^8.0.2",
     "parse-diff": "^0.11.1"
   }

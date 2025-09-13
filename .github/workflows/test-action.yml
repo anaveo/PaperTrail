@@ -17,7 +17,7 @@ jobs:
       - name: Run Analyzer
         uses: ./
         with:
-          anthropic-api-key: 'fake-key-stubbed'
+          gemini-api-key: 'fake-key-stubbed'
           repo-token: fake-local-token  # NEW: Mock token for local auth
         env:
           GITHUB_TOKEN: fake-local-token  # Ensures propagation

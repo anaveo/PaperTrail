@@ -1,4 +1,4 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const crypto = require('crypto');
 
 const adjectives = ['Robust', 'Swift', 'Elegant', 'Dynamic', 'Stable', 'Vivid', 'Clear', 'Bold'];
@@ -6,7 +6,7 @@ const adjectives = ['Robust', 'Swift', 'Elegant', 'Dynamic', 'Stable', 'Vivid', 
 /**
  * Generates commit message and summary, with stub mode for testing.
  * @param {Object} analysis - Diff analysis from diffAnalyzer.
- * @param {string} apiKey - Anthropic API key.
+ * @param {string} apiKey - Gemini API key.
  * @returns {Promise<{message: string, summary: string}>}
  */
 async function generate(analysis, apiKey) {
@@ -20,10 +20,11 @@ async function generate(analysis, apiKey) {
             return { message, summary };
         }
 
-        // Normal mode: Call Claude
-        const anthropic = new Anthropic({ apiKey });
-        const prompt = `
-You are a helpful Git commit analyst. Based on the following commit analysis (including files changed, diffs, and context), generate:
+        // Normal mode: Call Gemini
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });  // Fast model; swap to 'gemini-1.5-pro' for advanced tasks
+
+        const prompt = `You are a helpful Git commit analyst. Based on the following commit analysis (including files changed, diffs, and context), generate:
 
 1. A verbose, detailed commit message (2-4 sentences) explaining what was done, why, and any impacts. Make it professional and clear—avoid vague terms like "fixed" or "updated." Append a unique adjective in brackets at the end (e.g., [Robust]).
 
@@ -32,21 +33,18 @@ You are a helpful Git commit analyst. Based on the following commit analysis (in
 Commit Analysis:
 ${JSON.stringify(analysis, null, 2)}
 
-Output in JSON: {"message": "...", "summary": "..."}
-`;
+Output in JSON: {"message": "...", "summary": "..."}`;
 
-        const response = await anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 1024,
-            temperature: 0.7,
-            messages: [{ role: 'user', content: prompt }],
-        });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
 
-        if (!response.content || !response.content[0].text) {
-            throw new Error('No response from Claude');
+        if (!text) {
+            throw new Error('No response from Gemini');
         }
 
-        const output = JSON.parse(response.content[0].text);
+        // Parse JSON from response (Gemini outputs structured text)
+        const output = JSON.parse(text);
         return {
             message: output.message,
             summary: output.summary
