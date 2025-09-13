@@ -15,6 +15,12 @@ jobs:
           fetch-depth: 1  # Only HEAD needed
           token: ${{ github.token }}  # Auth for push
 
+      - name: Configure Git Identity  # NEW: Fixes "Author identity unknown"
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@github-actions[bot].com"
+          echo "Git identity set: $(git config user.name) <$(git config user.email)>"
+
       - name: Create Dummy File for Testing
         run: |
           echo "Test content for message enhancement" > test-dummy.txt
