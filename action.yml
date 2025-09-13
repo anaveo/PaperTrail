@@ -1,20 +1,23 @@
-name: 'Commit Analyzer Action'
-description: 'Analyzes commits, generates verbose messages via Gemini, and updates papertrail.md'
-inputs:
-  gemini-api-key:
-    description: 'API key for Google Gemini'
-    required: true
-  repo-token:
-    description: 'GitHub token for repo access'
-    required: true
-    default: ${{ github.token }}
-  papertrail-path:
-    description: 'Path to papertrail.md'
-    required: false
-    default: 'papertrail.md'
-outputs:
-  summary:
-    description: 'Generated commit summary'
+name: 'Commit Message Enhancer'
+description: 'Appends a fixed string to the latest commit message'
 runs:
-  using: 'node20'
-  main: 'dist/index.js'  # UPDATED: Points to bundled file
+  using: 'composite'  # No Node, just bash steps
+  steps:
+    - run: |
+        # Get the latest commit message
+        ORIGINAL_MESSAGE=$(git log -1 --pretty=%B)
+        echo "Original message: $ORIGINAL_MESSAGE"
+
+        # Append fixed string
+        NEW_MESSAGE="$ORIGINAL_MESSAGE [Enhanced]"
+        echo "New message: $NEW_MESSAGE"
+
+        # Amend the commit with the new message
+        git commit --amend -m "$NEW_MESSAGE"
+        echo "Commit amended successfully"
+
+        # Push the amended commit (force to overwrite)
+        git push origin HEAD --force
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}  # For push auth
