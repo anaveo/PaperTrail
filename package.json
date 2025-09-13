@@ -1,10 +1,10 @@
 {
     "name": "papertrail",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "Generates clean commit messages from diffs using Gemini LLM",
     "main": "index.js",
     "scripts": {
-        "build": "ncc build index.js -o dist --external @actions/core --external @actions/github --license licenses.txt",
+        "build": "ncc build index.js -o dist --external @actions/github --license licenses.txt",
         "test": "echo 'Tests TBD'"
     },
     "dependencies": {
