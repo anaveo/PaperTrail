@@ -35969,7 +35969,7 @@ async function run() {
         const isInitial = beforeSha === '0000000000000000000000000000000000000000';
 
         if (process.env.ACT === 'true') {
-            // Mock for local act
+            // Mock for local actd
             files = [{ filename: 'test.txt', status: 'modified', additions: 1, patch: '@@ -1 +1 @@ +Updated content' }];
         } else if (isInitial) {
             const { data } = await octokit.rest.repos.getCommit({
